@@ -38,14 +38,19 @@ class Window(QtWidgets.QMainWindow):
         self.setCentralWidget(central_widget)
         
         main_layout = QtWidgets.QHBoxLayout(central_widget)
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setContentsMargins(10, 10, 10, 10)
+        main_layout.setSpacing(10)
+
         left_widget = QtWidgets.QWidget()
         right_widget = QtWidgets.QWidget()
         main_layout.addWidget(left_widget)
         main_layout.addWidget(right_widget)
         
+
+        #Left Layout
         left_layout = QtWidgets.QVBoxLayout(left_widget)
         left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(5)
         
         buttons_widget = QtWidgets.QWidget()
         button_widget_layout = QtWidgets.QVBoxLayout(buttons_widget)
@@ -68,19 +73,17 @@ class Window(QtWidgets.QMainWindow):
 
         left_layout.addWidget(buttons_widget)
 
-        file_list_widget = QtWidgets.QWidget()
-        file_list_layout = QtWidgets.QVBoxLayout(file_list_widget)
-        file_list_layout.setContentsMargins(0, 0, 0, 0)
 
         self.file_list = QtWidgets.QListWidget()
-        file_list_layout.addWidget(self.file_list)
-        left_layout.addWidget(file_list_widget)
+        self.file_list.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        left_layout.addWidget(self.file_list, stretch=1)
 
 
+        #Right Layout
         right_layout = QtWidgets.QVBoxLayout(right_widget)
         right_layout.setContentsMargins(0, 0, 0, 0)
         self.usd_tree = QtWidgets.QTreeWidget()
-        right_layout.addWidget(self.usd_tree)
+        # right_layout.addWidget(self.usd_tree)
         
         self.resize(QtCore.QSize(750, 750))
 
