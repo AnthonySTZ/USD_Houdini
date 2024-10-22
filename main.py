@@ -160,6 +160,7 @@ class Window(QtWidgets.QMainWindow):
         self.resize(QtCore.QSize(750 + self.tree_width, 750))
 
         stage = Usd.Stage.Open(selected_file)
+        stage.Reload()
 
         for node in stage.TraverseAll():
             if node.GetTypeName() != "Mesh" and node.GetTypeName() != "Xform":
