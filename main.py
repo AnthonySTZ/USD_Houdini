@@ -45,8 +45,10 @@ class Window(QtWidgets.QMainWindow):
         button_widget_layout.setContentsMargins(50, 10, 50, 0)
 
         self.select_folder_btn = QtWidgets.QPushButton("Select USD Folder")
-
         button_widget_layout.addWidget(self.select_folder_btn)
+        self.preview_usd_btn = QtWidgets.QPushButton("Preview USD")
+        button_widget_layout.addWidget(self.preview_usd_btn)
+
         layout.addWidget(buttons_widget)
 
         file_list_widget = QtWidgets.QWidget()
