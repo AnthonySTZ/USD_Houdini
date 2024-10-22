@@ -97,6 +97,7 @@ class Window(QtWidgets.QMainWindow):
     def init_ui_functionnals(self) -> None:
         self.select_folder_btn.clicked.connect(self.select_folder)
         self.preview_usd_btn.clicked.connect(self.preview_usd)
+        self.import_btn.clicked.connect(self.import_to_houdini)
 
     def select_folder(self) -> None:
         self.folder_path = QtWidgets.QFileDialog.getExistingDirectory(
@@ -138,6 +139,21 @@ class Window(QtWidgets.QMainWindow):
         self.usd_window.show()
 
         self.usd_window.view.updateView(resetCam=True, forceComputeBBox=True)
+
+    def import_to_houdini(self) -> None:
+        if self.file_list.currentItem() is None:
+            print("Please select a file")
+            return
+
+        selected_file = self.folder_path + "/" + self.file_list.currentItem().text()
+
+        if not os.path.exists(selected_file):
+            print("Please select a correct file")
+            return
+
+        stage = hou.node("/stage")
+        filenode = stage.createNode("sublayer")
+        filenode.parm("filepath1").set(selected_file)
 
     def closeEvent(self, event) -> None:
         if self.usd_window is not None:
