@@ -1,6 +1,6 @@
 import sys
 from PySide2 import QtGui, QtCore, QtWidgets
-from pxr import Usd, UsdUtils, Sdf
+from pxr import Usd, UsdUtils, Sdf, UsdGeom
 from pxr.Usdviewq.stageView import StageView
 import os
 
@@ -95,6 +95,8 @@ class Window(QtWidgets.QMainWindow):
         self.usd_tree.setStyleSheet("font-size: 10pt;")
         self.usd_tree.setFocusPolicy(QtCore.Qt.NoFocus)
         self.usd_tree.setHeaderLabels(["Names", "Types"])
+        self.usd_tree.header().setStretchLastSection(False)
+        self.usd_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
 
         self.resize(QtCore.QSize(750, 750))
 
@@ -157,21 +159,20 @@ class Window(QtWidgets.QMainWindow):
         self.right_layout.addWidget(self.usd_tree)
         self.resize(QtCore.QSize(750 + self.tree_width, 750))
 
-        with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
-            stage = Usd.Stage.Open(selected_file)
-            for node in stage.Traverse():
-                if node.GetTypeName() != "Mesh" and node.GetTypeName() != "Xform":
-                    continue
+        stage = Usd.Stage.Open(selected_file)
 
-                if node.GetPrimPath().GetParentPath() == "/":
-                    node_item = QtWidgets.QTreeWidgetItem(
-                        [node.GetName(), node.GetTypeName()]
-                    )
-                    self.usd_tree.addTopLevelItem(node_item)
+        for node in stage.TraverseAll():
+            if node.GetTypeName() != "Mesh" and node.GetTypeName() != "Xform":
+                continue
+
+            if node.GetPrimPath().GetParentPath() == "/":
+                node_item = QtWidgets.QTreeWidgetItem(
+                    [node.GetName(), node.GetTypeName()]
+                )
+                self.usd_tree.addTopLevelItem(node_item)
+                if node.GetTypeName() == "Xform":
                     self.traverse_prim(node, node_item)
-
-        self.usd_tree.resizeColumnToContents(1)
-        self.usd_tree.resizeColumnToContents(0)
+        return
 
     def traverse_prim(
         self, prim: Usd.Prim, prim_item: QtWidgets.QTreeWidgetItem
@@ -179,11 +180,13 @@ class Window(QtWidgets.QMainWindow):
         for child in prim.GetChildren():
             if child.GetTypeName() != "Mesh" and child.GetTypeName() != "Xform":
                 continue
-            node_item = QtWidgets.QTreeWidgetItem(
+
+            child_item = QtWidgets.QTreeWidgetItem(
                 [child.GetName(), child.GetTypeName()]
             )
-            child_item = prim_item.addChild(node_item)
-            self.traverse_prim(child, child_item)
+            prim_item.addChild(child_item)
+            if child.GetTypeName() == "Xform":
+                self.traverse_prim(child, child_item)
 
     def get_selected_file(self) -> str:
         if self.file_list.currentItem() is None:
