@@ -93,6 +93,8 @@ class Window(QtWidgets.QMainWindow):
         self.right_layout.setContentsMargins(0, 0, 0, 0)
         self.usd_tree = QtWidgets.QTreeWidget()
         self.usd_tree.setStyleSheet("font-size: 10pt;")
+        self.usd_tree.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.usd_tree.setHeaderLabels(["Names", "Types"])
 
         self.resize(QtCore.QSize(750, 750))
 
@@ -158,8 +160,30 @@ class Window(QtWidgets.QMainWindow):
         with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
             stage = Usd.Stage.Open(selected_file)
             for node in stage.Traverse():
-                node_item = QtWidgets.QTreeWidgetItem([node.GetName()])
-                self.usd_tree.addTopLevelItem(node_item)
+                if node.GetTypeName() != "Mesh" and node.GetTypeName() != "Xform":
+                    continue
+
+                if node.GetPrimPath().GetParentPath() == "/":
+                    node_item = QtWidgets.QTreeWidgetItem(
+                        [node.GetName(), node.GetTypeName()]
+                    )
+                    self.usd_tree.addTopLevelItem(node_item)
+                    self.traverse_prim(node, node_item)
+
+        self.usd_tree.resizeColumnToContents(1)
+        self.usd_tree.resizeColumnToContents(0)
+
+    def traverse_prim(
+        self, prim: Usd.Prim, prim_item: QtWidgets.QTreeWidgetItem
+    ) -> None:
+        for child in prim.GetChildren():
+            if child.GetTypeName() != "Mesh" and child.GetTypeName() != "Xform":
+                continue
+            node_item = QtWidgets.QTreeWidgetItem(
+                [child.GetName(), child.GetTypeName()]
+            )
+            child_item = prim_item.addChild(node_item)
+            self.traverse_prim(child, child_item)
 
     def get_selected_file(self) -> str:
         if self.file_list.currentItem() is None:
