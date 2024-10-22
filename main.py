@@ -6,7 +6,7 @@ import os
 
 
 class PreviewUSDWidget(QtWidgets.QWidget):
-    def __init__(self, stage=None):
+    def __init__(self, stage=None) -> None:
         super(PreviewUSDWidget, self).__init__()
         self.model = StageView.DefaultDataModel()
 
@@ -19,19 +19,20 @@ class PreviewUSDWidget(QtWidgets.QWidget):
         if stage:
             self.setStage(stage)
 
-    def setStage(self, stage):
+    def setStage(self, stage) -> None:
         self.model.stage = stage
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
         # Ensure to close the renderer to avoid GlfPostPendingGLErrors
         self.view.closeRenderer()
 
 
 class Window(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super(Window, self).__init__()
 
         self.folder_path = ""
+        self.usd_window = None
 
         self.show_ui()
         self.init_ui_functionnals()
@@ -81,6 +82,8 @@ class Window(QtWidgets.QMainWindow):
         self.file_list.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
+        self.file_list.setStyleSheet("font-size: 10pt;")
+        self.file_list.setFocusPolicy(QtCore.Qt.NoFocus)
         left_layout.addWidget(self.file_list, stretch=1)
 
         # Right Layout
@@ -93,6 +96,7 @@ class Window(QtWidgets.QMainWindow):
 
     def init_ui_functionnals(self) -> None:
         self.select_folder_btn.clicked.connect(self.select_folder)
+        self.preview_usd_btn.clicked.connect(self.preview_usd)
 
     def select_folder(self) -> None:
         self.folder_path = QtWidgets.QFileDialog.getExistingDirectory(
@@ -114,17 +118,32 @@ class Window(QtWidgets.QMainWindow):
             ):  # Check for all files that end with ".usd", ".usda", etc...
                 self.file_list.addItem(file)
 
+    def preview_usd(self) -> None:
+        if self.file_list.currentItem() is None:
+            print("Please select a file")
+            return
 
-path = "A:\\Programming\\USD_Houdini\\open_usd.usda"
-with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
-    stage = Usd.Stage.Open(path)
+        selected_file = self.folder_path + "/" + self.file_list.currentItem().text()
 
-# window = Widget(stage)
-# window.setWindowTitle("USD Viewer")
-# window.resize(QtCore.QSize(750, 750))
-# window.show()
+        if not os.path.exists(selected_file):
+            print("Please select a correct file")
+            return
 
-# window.view.updateView(resetCam=True, forceComputeBBox=True)
+        with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
+            stage = Usd.Stage.Open(selected_file)
+
+        self.usd_window = PreviewUSDWidget(stage)
+        self.usd_window.setWindowTitle("USD Viewer")
+        self.usd_window.resize(QtCore.QSize(750, 750))
+        self.usd_window.show()
+
+        self.usd_window.view.updateView(resetCam=True, forceComputeBBox=True)
+
+    def closeEvent(self, event) -> None:
+        if self.usd_window is not None:
+            # Ensure to close the renderer to avoid GlfPostPendingGLErrors
+            self.usd_window.close()
+
 
 window = Window()
 window.show()
