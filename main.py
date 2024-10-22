@@ -92,6 +92,7 @@ class Window(QtWidgets.QMainWindow):
         self.right_layout = QtWidgets.QVBoxLayout(right_widget)
         self.right_layout.setContentsMargins(0, 0, 0, 0)
         self.usd_tree = QtWidgets.QTreeWidget()
+        self.usd_tree.setStyleSheet("font-size: 10pt;")
 
         self.resize(QtCore.QSize(750, 750))
 
