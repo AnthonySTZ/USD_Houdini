@@ -29,9 +29,10 @@ class Window(QtWidgets.QMainWindow):
         super(Window, self).__init__()
         
         self.show_ui()
+        self.init_ui_functionnals()
 
 
-    def show_ui(self):
+    def show_ui(self)->None:
         self.setWindowTitle("USD Houdini")
 
         central_widget = QtWidgets.QWidget(self)
@@ -86,6 +87,16 @@ class Window(QtWidgets.QMainWindow):
         # right_layout.addWidget(self.usd_tree)
         
         self.resize(QtCore.QSize(750, 750))
+
+    def init_ui_functionnals(self)->None:
+        self.select_folder_btn.clicked.connect(self.select_folder)
+
+    def select_folder(self)->None:
+        folder_path = QtWidgets.QFileDialog.getExistingDirectory(self, "Select a USD Folder")
+        self.folder_path_te.setText(folder_path)
+
+
+
 
 
 path = "A:\\Programming\\USD_Houdini\\open_usd.usda"
