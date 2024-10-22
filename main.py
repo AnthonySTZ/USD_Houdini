@@ -33,6 +33,7 @@ class Window(QtWidgets.QMainWindow):
 
         self.folder_path = ""
         self.usd_window = None
+        self.tree_width = 400
 
         self.show_ui()
         self.init_ui_functionnals()
@@ -87,10 +88,10 @@ class Window(QtWidgets.QMainWindow):
         left_layout.addWidget(self.file_list, stretch=1)
 
         # Right Layout
-        right_layout = QtWidgets.QVBoxLayout(right_widget)
-        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_widget.setMaximumWidth(self.tree_width)
+        self.right_layout = QtWidgets.QVBoxLayout(right_widget)
+        self.right_layout.setContentsMargins(0, 0, 0, 0)
         self.usd_tree = QtWidgets.QTreeWidget()
-        # right_layout.addWidget(self.usd_tree)
 
         self.resize(QtCore.QSize(750, 750))
 
@@ -148,6 +149,16 @@ class Window(QtWidgets.QMainWindow):
         selected_file = self.get_selected_file()
         if selected_file == "":
             return
+
+        self.usd_tree.clear()
+        self.right_layout.addWidget(self.usd_tree)
+        self.resize(QtCore.QSize(750 + self.tree_width, 750))
+
+        with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
+            stage = Usd.Stage.Open(selected_file)
+            for node in stage.Traverse():
+                node_item = QtWidgets.QTreeWidgetItem([node.GetName()])
+                self.usd_tree.addTopLevelItem(node_item)
 
     def get_selected_file(self) -> str:
         if self.file_list.currentItem() is None:
