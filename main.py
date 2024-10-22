@@ -98,6 +98,7 @@ class Window(QtWidgets.QMainWindow):
         self.select_folder_btn.clicked.connect(self.select_folder)
         self.preview_usd_btn.clicked.connect(self.preview_usd)
         self.import_btn.clicked.connect(self.import_to_houdini)
+        self.file_list.clicked.connect(self.update_usd_tree)
 
     def select_folder(self) -> None:
         self.folder_path = QtWidgets.QFileDialog.getExistingDirectory(
@@ -120,14 +121,8 @@ class Window(QtWidgets.QMainWindow):
                 self.file_list.addItem(file)
 
     def preview_usd(self) -> None:
-        if self.file_list.currentItem() is None:
-            print("Please select a file")
-            return
-
-        selected_file = self.folder_path + "/" + self.file_list.currentItem().text()
-
-        if not os.path.exists(selected_file):
-            print("Please select a correct file")
+        selected_file = self.get_selected_file()
+        if selected_file == "":
             return
 
         with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
@@ -141,19 +136,31 @@ class Window(QtWidgets.QMainWindow):
         self.usd_window.view.updateView(resetCam=True, forceComputeBBox=True)
 
     def import_to_houdini(self) -> None:
-        if self.file_list.currentItem() is None:
-            print("Please select a file")
-            return
-
-        selected_file = self.folder_path + "/" + self.file_list.currentItem().text()
-
-        if not os.path.exists(selected_file):
-            print("Please select a correct file")
+        selected_file = self.get_selected_file()
+        if selected_file == "":
             return
 
         stage = hou.node("/stage")
         filenode = stage.createNode("sublayer")
         filenode.parm("filepath1").set(selected_file)
+
+    def update_usd_tree(self) -> None:
+        selected_file = self.get_selected_file()
+        if selected_file == "":
+            return
+
+    def get_selected_file(self) -> str:
+        if self.file_list.currentItem() is None:
+            print("Please select a file")
+            return ""
+
+        selected_file = self.folder_path + "/" + self.file_list.currentItem().text()
+
+        if not os.path.exists(selected_file):
+            print("Please select a correct file")
+            return ""
+
+        return selected_file
 
     def closeEvent(self, event) -> None:
         if self.usd_window is not None:
