@@ -2,42 +2,46 @@ import sys
 from PySide2 import QtGui, QtCore, QtWidgets
 from pxr import Usd, UsdUtils, Sdf
 from pxr.Usdviewq.stageView import StageView
+import os
+
 
 class PreviewUSDWidget(QtWidgets.QWidget):
     def __init__(self, stage=None):
         super(PreviewUSDWidget, self).__init__()
         self.model = StageView.DefaultDataModel()
-        
+
         self.view = StageView(dataModel=self.model)
-        
+
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(self.view)
         layout.setContentsMargins(0, 0, 0, 0)
-        
+
         if stage:
             self.setStage(stage)
-        
+
     def setStage(self, stage):
         self.model.stage = stage
-                              
-    def closeEvent(self, event):        
+
+    def closeEvent(self, event):
         # Ensure to close the renderer to avoid GlfPostPendingGLErrors
         self.view.closeRenderer()
-        
+
+
 class Window(QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
-        
+
+        self.folder_path = ""
+
         self.show_ui()
         self.init_ui_functionnals()
 
-
-    def show_ui(self)->None:
+    def show_ui(self) -> None:
         self.setWindowTitle("USD Houdini")
 
         central_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(central_widget)
-        
+
         main_layout = QtWidgets.QHBoxLayout(central_widget)
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
@@ -46,13 +50,12 @@ class Window(QtWidgets.QMainWindow):
         right_widget = QtWidgets.QWidget()
         main_layout.addWidget(left_widget)
         main_layout.addWidget(right_widget)
-        
 
-        #Left Layout
+        # Left Layout
         left_layout = QtWidgets.QVBoxLayout(left_widget)
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(5)
-        
+
         buttons_widget = QtWidgets.QWidget()
         button_widget_layout = QtWidgets.QVBoxLayout(buttons_widget)
         button_widget_layout.setContentsMargins(0, 0, 0, 0)
@@ -74,29 +77,42 @@ class Window(QtWidgets.QMainWindow):
 
         left_layout.addWidget(buttons_widget)
 
-
         self.file_list = QtWidgets.QListWidget()
-        self.file_list.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.file_list.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         left_layout.addWidget(self.file_list, stretch=1)
 
-
-        #Right Layout
+        # Right Layout
         right_layout = QtWidgets.QVBoxLayout(right_widget)
         right_layout.setContentsMargins(0, 0, 0, 0)
         self.usd_tree = QtWidgets.QTreeWidget()
         # right_layout.addWidget(self.usd_tree)
-        
+
         self.resize(QtCore.QSize(750, 750))
 
-    def init_ui_functionnals(self)->None:
+    def init_ui_functionnals(self) -> None:
         self.select_folder_btn.clicked.connect(self.select_folder)
 
-    def select_folder(self)->None:
-        folder_path = QtWidgets.QFileDialog.getExistingDirectory(self, "Select a USD Folder")
-        self.folder_path_te.setText(folder_path)
+    def select_folder(self) -> None:
+        self.folder_path = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Select a USD Folder"
+        )
+        self.folder_path_te.setText(self.folder_path)
+        self.update_file_list()
 
+    def update_file_list(self) -> None:
+        if not os.path.exists(self.folder_path):
+            return
 
-
+        self.file_list.clear()
+        for file in os.listdir(self.folder_path):
+            if not os.path.isfile(os.path.join(self.folder_path, file)):
+                continue
+            if (
+                ".usd" in file[-6:]
+            ):  # Check for all files that end with ".usd", ".usda", etc...
+                self.file_list.addItem(file)
 
 
 path = "A:\\Programming\\USD_Houdini\\open_usd.usda"
