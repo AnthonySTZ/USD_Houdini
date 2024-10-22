@@ -48,6 +48,8 @@ class Window(QtWidgets.QMainWindow):
         button_widget_layout.addWidget(self.select_folder_btn)
         self.preview_usd_btn = QtWidgets.QPushButton("Preview USD")
         button_widget_layout.addWidget(self.preview_usd_btn)
+        self.import_btn = QtWidgets.QPushButton("Import To Houdini")
+        button_widget_layout.addWidget(self.import_btn)
 
         layout.addWidget(buttons_widget)
 
