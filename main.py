@@ -172,7 +172,6 @@ class Window(QtWidgets.QMainWindow):
                 self.usd_tree.addTopLevelItem(node_item)
                 if node.GetTypeName() == "Xform":
                     self.traverse_prim(node, node_item)
-        return
 
     def traverse_prim(
         self, prim: Usd.Prim, prim_item: QtWidgets.QTreeWidgetItem
