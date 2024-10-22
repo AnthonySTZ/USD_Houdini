@@ -25,3 +25,7 @@ It will render the USD file in a new window
 
 ![Image](./assets/render.jpg)
 
+## Import USD File into Houdini
+
+You can import the USD file just by clicking the "Import into Houdini" button !
+
